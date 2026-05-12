@@ -35,20 +35,29 @@ class DocumentRequestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'resident_id' => 'required|exists:residents,id',
+            'resident_id' => 'sometimes|exists:residents,id',
             'document_type_id' => 'required|exists:document_types,id',
             'purpose' => 'required|string|max:1000',
+            'additional_notes' => 'nullable|string|max:1000',
         ]);
 
-        $request = DocumentRequest::create(array_merge($validated, ['status' => DocumentRequest::STATUS_PENDING]));
+        // If resident_id not provided, assume it's the authenticated user (resident)
+        if (!isset($validated['resident_id'])) {
+            $validated['resident_id'] = auth()->id();
+        }
 
-        $request->statusLogs()->create([
+        $documentRequest = DocumentRequest::create(array_merge($validated, ['status' => DocumentRequest::STATUS_PENDING]));
+
+        $documentRequest->statusLogs()->create([
             'status' => DocumentRequest::STATUS_PENDING,
             'remarks' => 'Request submitted',
         ]);
 
-        return redirect()->route('document-requests.index')
-            ->with('success', 'Document request submitted successfully.');
+        if (auth()->user()->isResident()) {
+            return redirect()->route('dashboard.index')->with('success', 'Document request submitted successfully.');
+        }
+
+        return redirect()->route('document-requests.index')->with('success', 'Document request submitted successfully.');
     }
 
     public function edit(DocumentRequest $documentRequest)

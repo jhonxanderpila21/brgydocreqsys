@@ -3,8 +3,8 @@
 @section('content')
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Reports & Statistics</h1>
-            <p class="text-muted mb-0">Dashboard showing system analytics and data exports.</p>
+            <h1 class="h3 mb-1">Dashboard</h1>
+            <p class="text-muted mb-0">Overview of system analytics and key statistics.</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('reports.export-requests') }}" class="btn btn-outline-primary">
@@ -20,19 +20,159 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <!-- Request Statistics by Type -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Total Requests</h6>
+                            <h2 class="mb-0">{{ number_format($totalRequests) }}</h2>
+                        </div>
+                        <div class="bg-primary text-white rounded-3 p-3">
+                            <i class="bi bi-clipboard-check fs-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">All submitted document requests across the system.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Processed</h6>
+                            <h2 class="mb-0">{{ number_format($totalProcessed) }}</h2>
+                        </div>
+                        <div class="bg-success text-white rounded-3 p-3">
+                            <i class="bi bi-check-circle fs-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">Requests released and completed successfully.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Total Revenue</h6>
+                            <h2 class="mb-0">₱{{ number_format($totalRevenue, 2) }}</h2>
+                        </div>
+                        <div class="bg-warning text-dark rounded-3 p-3">
+                            <i class="bi bi-currency-dollar fs-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">Collected fees for paid document requests.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Pending Requests</h6>
+                            <h2 class="mb-0">{{ number_format($pendingRequests) }}</h2>
+                        </div>
+                        <div class="bg-danger text-white rounded-3 p-3">
+                            <i class="bi bi-hourglass-split fs-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">Requests that are still in progress or awaiting approval.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Residents</h6>
+                            <h2 class="mb-0">{{ number_format($residentStats['total_residents']) }}</h2>
+                        </div>
+                        <div class="bg-info text-white rounded-3 p-3">
+                            <i class="bi bi-people fs-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">Registered residents in the barangay.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Households</h6>
+                            <h2 class="mb-0">{{ number_format($totalHouseholds) }}</h2>
+                        </div>
+                        <div class="bg-secondary text-white rounded-3 p-3">
+                            <i class="bi bi-house-door fs-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">Household records currently stored.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Document Types</h6>
+                            <h2 class="mb-0">{{ number_format($documentTypes->count()) }}</h2>
+                        </div>
+                        <div class="bg-dark text-white rounded-3 p-3">
+                            <i class="bi bi-journal-text fs-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">Different document kinds available for request.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-xl-7">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Document Requests by Type & Status</h5>
+                    <h5 class="card-title mb-0">Monthly Requests</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyRequestsChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Request Status Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusBreakdownChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Document Requests by Type</h5>
                 </div>
                 <div class="card-body">
                     @if($requestsByType->isEmpty())
                         <p class="text-muted mb-0">No document requests found.</p>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Document Type</th>
@@ -65,151 +205,70 @@
         </div>
     </div>
 
-    <!-- Overall Status Summary -->
-    <div class="row mb-4">
-        <div class="col-12 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Overall Status Summary</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        @foreach(\App\Models\DocumentRequest::statuses() as $status => $label)
-                            <div class="col-6">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted">{{ $label }}</span>
-                                    <span class="badge bg-primary fs-6">{{ $requestsByStatus[$status] ?? 0 }}</span>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const monthlyLabels = @json($monthlyStats->map(fn($stat) => \Carbon\Carbon::create($stat->year, $stat->month)->format('M')));
+        const monthlyData = @json($monthlyStats->pluck('total_requests'));
+        const statusLabels = @json($requestsByStatus->keys()->map(fn($status) => ucwords(str_replace('_', ' ', $status))));
+        const statusData = @json($requestsByStatus->values());
 
-        <!-- Resident Demographics -->
-        <div class="col-12 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Resident Demographics</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <div class="text-center">
-                                <div class="h4 mb-1">{{ $residentStats['total_residents'] }}</div>
-                                <small class="text-muted">Total Residents</small>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <h6 class="mb-2">Age Distribution</h6>
-                            @foreach($residentStats['age_groups'] as $ageGroup => $count)
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="small">{{ $ageGroup }} years</span>
-                                    <span class="small fw-semibold">{{ $count }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        const monthlyCtx = document.getElementById('monthlyRequestsChart');
+        if (monthlyCtx) {
+            new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: 'Requests',
+                        data: monthlyData,
+                        backgroundColor: 'rgba(13, 110, 253, 0.8)',
+                        borderRadius: 8,
+                        barThickness: 26,
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(15, 23, 32, 0.08)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
 
-    <!-- Monthly Statistics -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Monthly Processed Documents & Fees (Last 12 Months)</h5>
-                </div>
-                <div class="card-body">
-                    @if($monthlyStats->isEmpty())
-                        <p class="text-muted mb-0">No processed documents with payments found.</p>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Month/Year</th>
-                                        <th>Total Requests</th>
-                                        <th>Processed Documents</th>
-                                        <th>Total Fees Collected</th>
-                                        <th>Average Fee</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($monthlyStats as $stat)
-                                        <tr>
-                                            <td>{{ \Carbon\Carbon::create($stat->year, $stat->month)->format('M Y') }}</td>
-                                            <td>{{ $stat->total_requests }}</td>
-                                            <td>{{ $stat->processed_documents }}</td>
-                                            <td>₱{{ number_format($stat->total_fees ?? 0, 2) }}</td>
-                                            <td>
-                                                @if($stat->processed_documents > 0)
-                                                    ₱{{ number_format(($stat->total_fees ?? 0) / $stat->processed_documents, 2) }}
-                                                @else
-                                                    ₱0.00
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Export Filters -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Advanced Export Options</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('reports.export-requests') }}" method="GET" class="row g-3">
-                        <div class="col-12 col-md-3">
-                            <label class="form-label">Document Type</label>
-                            <select name="document_type_id" class="form-select">
-                                <option value="">All Types</option>
-                                @foreach($documentTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-md-3">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="">All Statuses</option>
-                                @foreach(\App\Models\DocumentRequest::statuses() as $key => $label)
-                                    <option value="{{ $key }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-md-2">
-                            <label class="form-label">From Date</label>
-                            <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
-                        </div>
-
-                        <div class="col-12 col-md-2">
-                            <label class="form-label">To Date</label>
-                            <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
-                        </div>
-
-                        <div class="col-12 col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-download me-1"></i>Export Filtered
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+        const statusCtx = document.getElementById('statusBreakdownChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: [
+                            '#0d6efd',
+                            '#198754',
+                            '#ffc107',
+                            '#dc3545',
+                            '#6c757d'
+                        ],
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 16 }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
 @endsection

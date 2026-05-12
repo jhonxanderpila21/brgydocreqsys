@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DocumentRequest;
 use App\Models\DocumentType;
+use App\Models\Household;
 use App\Models\Resident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,12 @@ class ReportsController extends Controller
             ->get();
 
         // Resident demographics
+        $totalRequests = DocumentRequest::count();
+        $totalProcessed = DocumentRequest::where('status', 'released')->count();
+        $pendingRequests = DocumentRequest::whereIn('status', ['pending', 'processing', 'ready_for_pickup'])->count();
+        $totalRevenue = DocumentRequest::where('is_paid', true)->sum('payment_amount');
+        $totalHouseholds = Household::count();
+
         $residentStats = [
             'total_residents' => Resident::count(),
             'age_groups' => [
@@ -57,7 +64,12 @@ class ReportsController extends Controller
             'requestsByStatus',
             'monthlyStats',
             'residentStats',
-            'documentTypes'
+            'documentTypes',
+            'totalRequests',
+            'totalProcessed',
+            'pendingRequests',
+            'totalRevenue',
+            'totalHouseholds'
         ));
     }
 

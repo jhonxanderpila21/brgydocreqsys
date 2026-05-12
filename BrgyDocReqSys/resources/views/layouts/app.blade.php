@@ -13,8 +13,14 @@
             }
             .sidebar {
                 min-height: 100vh;
+                width: 250px;
                 background: #0f1720;
                 color: #ffffff;
+                position: fixed;
+                top: 0;
+                left: 0;
+                overflow-y: auto;
+                z-index: 101;
             }
             .sidebar a {
                 color: #ffffff !important;
@@ -23,6 +29,26 @@
             .sidebar a:hover {
                 background: #f8f9fa;
                 color: #0f1720 !important;
+            }
+            .main-content {
+                min-height: 100vh;
+                margin-left: 250px;
+            }
+            .topbar {
+                background: #ffffff;
+                border-bottom: 1px solid rgba(15, 23, 32, .08);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+            @media (max-width: 991.98px) {
+                .sidebar {
+                    position: static;
+                    width: 100%;
+                }
+                .main-content {
+                    margin-left: 0;
+                }
             }
             .sidebar .brand-title {
                 font-size: 1.05rem;
@@ -77,36 +103,48 @@
             <aside class="sidebar p-4 d-none d-md-flex flex-column gap-4">
                 <div>
                     <div class="d-flex align-items-center mb-3">
-                        <div class="brand-logo">B</div>
+                       
                         <div>
-                            <div class="brand-title fw-bold">Brgy. System</div>
-                            <small class="text-muted">Information System</small>
+                            <div class="brand-title fw-bold">Barangay Document Request System</div>
+                           
                         </div>
                     </div>
                     <div class="small text-secondary mb-4">Hello, Administrator</div>
                 </div>
 
                 <nav class="nav flex-column gap-1">
-                    <a class="nav-link{{ request()->routeIs('residents.*') ? ' active' : '' }}" href="{{ route('residents.index') }}">
-                        <i class="bi bi-people"></i>
-                        Residents
+                    @php $role = auth()->user()->role ?? null; @endphp
+
+                    <a class="nav-link{{ request()->routeIs('dashboard.*') ? ' active' : '' }}" href="{{ route('dashboard.index') }}">
+                        <i class="bi bi-speedometer2"></i>
+                        Dashboard
                     </a>
-                    <a class="nav-link{{ request()->routeIs('households.*') ? ' active' : '' }}" href="{{ route('households.index') }}">
-                        <i class="bi bi-house"></i>
-                        Households
-                    </a>
-                    <a class="nav-link{{ request()->routeIs('document-types.*') ? ' active' : '' }}" href="{{ route('document-types.index') }}">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Document Types
-                    </a>
-                    <a class="nav-link{{ request()->routeIs('document-requests.*') ? ' active' : '' }}" href="{{ route('document-requests.index') }}">
-                        <i class="bi bi-clipboard-check"></i>
-                        Document Requests
-                    </a>
-                    <a class="nav-link{{ request()->routeIs('reports.*') ? ' active' : '' }}" href="{{ route('reports.dashboard') }}">
-                        <i class="bi bi-bar-chart"></i>
-                        Reports
-                    </a>
+
+                    @if(in_array($role, ['admin', 'staff']))
+                        <a class="nav-link{{ request()->routeIs('residents.*') ? ' active' : '' }}" href="{{ route('residents.index') }}">
+                            <i class="bi bi-people"></i>
+                            Residents
+                        </a>
+                        <a class="nav-link{{ request()->routeIs('households.*') ? ' active' : '' }}" href="{{ route('households.index') }}">
+                            <i class="bi bi-house"></i>
+                            Households
+                        </a>
+                        <a class="nav-link{{ request()->routeIs('document-requests.*') ? ' active' : '' }}" href="{{ route('document-requests.index') }}">
+                            <i class="bi bi-clipboard-check"></i>
+                            Document Requests
+                        </a>
+                        <a class="nav-link{{ request()->routeIs('reports.*') ? ' active' : '' }}" href="{{ route('reports.dashboard') }}">
+                            <i class="bi bi-bar-chart"></i>
+                            Reports
+                        </a>
+                    @endif
+
+                    @if($role === 'admin')
+                        <a class="nav-link{{ request()->routeIs('document-types.*') ? ' active' : '' }}" href="{{ route('document-types.index') }}">
+                            <i class="bi bi-file-earmark-text"></i>
+                            Document Types
+                        </a>
+                    @endif
                 </nav>
             </aside>
 
@@ -114,11 +152,17 @@
                 <header class="topbar py-3 px-4 d-flex justify-content-between align-items-center">
                     <div>
                         <h1 class="h4 mb-0">{{ isset($pageTitle) ? $pageTitle : 'Dashboard' }}</h1>
-                        <p class="text-muted mb-0">Manage barangay requests, residents, and reports.</p>
+                        <p class="text-muted mb-0">Manage barangay requests, residents, and dashboard.</p>
                     </div>
-                    <div class="text-end">
-                        <div class="fw-semibold">Administrator</div>
-                        <div class="user-label">Logged in as admin</div>
+                    <div class="text-end d-flex flex-column gap-2">
+                        <div class="fw-semibold">{{ auth()->check() ? auth()->user()->name : 'Administrator' }}</div>
+                        <div class="user-label">{{ auth()->check() ? 'Logged in' : 'Guest' }}</div>
+                        @auth
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Logout</button>
+                            </form>
+                        @endauth
                     </div>
                 </header>
 
