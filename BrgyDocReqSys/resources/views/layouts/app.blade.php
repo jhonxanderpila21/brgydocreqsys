@@ -201,6 +201,17 @@
                         </a>
                     @endif
 
+                    @if($role === 'resident')
+                        <a class="nav-link{{ request()->routeIs('resident.profile') ? ' active' : '' }}" href="{{ route('resident.profile') }}">
+                            <i class="bi bi-person"></i>
+                            My Profile
+                        </a>
+                        <a class="nav-link{{ request()->routeIs('resident.notifications') ? ' active' : '' }}" href="{{ route('resident.notifications') }}">
+                            <i class="bi bi-bell"></i>
+                            Notifications
+                        </a>
+                    @endif
+
                     @if($role === 'admin')
                         <a class="nav-link{{ request()->routeIs('document-types.*') ? ' active' : '' }}" href="{{ route('document-types.index') }}">
                             <i class="bi bi-file-earmark-text"></i>

@@ -3,13 +3,19 @@
 @section('content')
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Resident Portal</h1>
+            <h1 class="h3 mb-1 fw-bold text-dark">Resident Portal</h1>
             <p class="text-muted mb-0">File document requests and track your application status.</p>
         </div>
         <div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fileRequestModal">
-                <i class="bi bi-plus-circle me-1"></i>File New Request
-            </button>
+            @if($residentId)
+                <button type="button" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#fileRequestModal">
+                    <i class="bi bi-plus-circle me-2"></i>File New Request
+                </button>
+            @else
+                <a href="{{ route('resident.profile') }}" class="btn btn-warning px-4 py-2 fw-semibold shadow-sm">
+                    <i class="bi bi-person-fill-exclamation me-2"></i>Complete Profile First
+                </a>
+            @endif
         </div>
     </div>
 
@@ -72,12 +78,12 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Request ID</th>
-                                        <th>Document Type</th>
-                                        <th>Status</th>
-                                        <th>Submitted</th>
-                                        <th>Processing Fee</th>
-                                        <th>Actions</th>
+                                        <th class="text-muted text-uppercase" style="font-size: 0.75rem;">Request ID</th>
+                                        <th class="text-muted text-uppercase" style="font-size: 0.75rem;">Document Type & Purpose</th>
+                                        <th class="text-muted text-uppercase" style="font-size: 0.75rem;">Status</th>
+                                        <th class="text-muted text-uppercase" style="font-size: 0.75rem;">Date Requested</th>
+                                        <th class="text-muted text-uppercase" style="font-size: 0.75rem;">Processing Fee</th>
+                                        <th class="text-muted text-uppercase" style="font-size: 0.75rem;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -198,8 +204,15 @@
                     <h5 class="modal-title" id="requestDetailsModalLabel">Request Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="requestDetailsContent">
-                    <!-- Content will be loaded here -->
+                <div class="modal-body p-0" id="requestDetailsContent">
+                    <div class="p-4 text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -213,18 +226,111 @@
             document.getElementById('processingFee').textContent = '₱' + parseFloat(fee).toFixed(2);
         });
 
-        // View request details
+        // View request details via AJAX
         function viewRequestDetails(requestId) {
-            // This would typically make an AJAX call to get request details
-            // For now, we'll show a placeholder
-            const content = `
-                <div class="text-center">
-                    <p>Request details for ID: ${requestId}</p>
-                    <p class="text-muted">This feature would show full request information, status history, and requirements.</p>
+            const modal = new bootstrap.Modal(document.getElementById('requestDetailsModal'));
+            modal.show();
+            
+            const contentDiv = document.getElementById('requestDetailsContent');
+            contentDiv.innerHTML = `
+                <div class="p-5 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Fetching details...</p>
                 </div>
             `;
-            document.getElementById('requestDetailsContent').innerHTML = content;
-            new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
+            
+            fetch(`/document-requests/${requestId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const req = data.request;
+                    const docType = req.document_type ? req.document_type.name : 'Unknown';
+                    const resident = req.resident ? req.resident.full_name : 'Unknown';
+                    const dateReq = new Date(req.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    
+                    let statusClass = 'secondary';
+                    if(req.status === 'pending') statusClass = 'warning';
+                    if(req.status === 'processing') statusClass = 'info';
+                    if(req.status === 'ready_for_pickup') statusClass = 'primary';
+                    if(req.status === 'released') statusClass = 'success';
+                    if(req.status === 'rejected') statusClass = 'danger';
+                    const statusText = req.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+                    let logsHtml = '';
+                    if(req.status_logs && req.status_logs.length > 0) {
+                        req.status_logs.forEach(log => {
+                            const logDate = new Date(log.created_at).toLocaleString();
+                            const sText = log.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            logsHtml += `
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>${sText}</strong>
+                                        <small class="text-muted">${logDate}</small>
+                                    </div>
+                                    <div class="text-muted small">${log.remarks || ''}</div>
+                                </li>
+                            `;
+                        });
+                    } else {
+                        logsHtml = '<li class="list-group-item text-muted">No status logs available.</li>';
+                    }
+
+                    const paymentStatus = req.is_paid 
+                        ? `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Paid (₱${parseFloat(req.payment_amount).toFixed(2)})</span>`
+                        : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Unpaid</span>`;
+                    
+                    contentDiv.innerHTML = `
+                        <div class="p-4 border-bottom bg-light">
+                            <div class="row align-items-center">
+                                <div class="col-sm-8">
+                                    <h6 class="text-uppercase text-muted mb-1" style="font-size: 0.75rem;">Document Type</h6>
+                                    <h5 class="mb-0 fw-bold">${docType}</h5>
+                                </div>
+                                <div class="col-sm-4 text-sm-end mt-3 mt-sm-0">
+                                    <span class="badge bg-${statusClass} px-3 py-2 fs-6 rounded-pill">${statusText}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="row g-4 mb-4">
+                                <div class="col-sm-6">
+                                    <p class="text-muted mb-1 small text-uppercase fw-bold">Request ID</p>
+                                    <p class="mb-0 fw-semibold">#${String(req.id).padStart(4, '0')}</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <p class="text-muted mb-1 small text-uppercase fw-bold">Date Requested</p>
+                                    <p class="mb-0 fw-semibold">${dateReq}</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <p class="text-muted mb-1 small text-uppercase fw-bold">Payment Status</p>
+                                    <p class="mb-0">${paymentStatus}</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <p class="text-muted mb-1 small text-uppercase fw-bold">Resident</p>
+                                    <p class="mb-0 fw-semibold">${resident}</p>
+                                </div>
+                                <div class="col-12">
+                                    <p class="text-muted mb-1 small text-uppercase fw-bold">Purpose</p>
+                                    <p class="mb-0 p-3 bg-light rounded">${req.purpose || 'N/A'}</p>
+                                </div>
+                            </div>
+                            
+                            <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Status History</h6>
+                            <ul class="list-group list-group-flush border rounded shadow-sm">
+                                ${logsHtml}
+                            </ul>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    contentDiv.innerHTML = `
+                        <div class="p-5 text-center text-danger">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                            <p class="mt-3">Failed to load request details.</p>
+                        </div>
+                    `;
+                });
         }
 
         // Mark as released (for pickup confirmation)

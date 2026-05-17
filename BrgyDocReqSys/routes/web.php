@@ -6,6 +6,8 @@ use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\HouseholdController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\ResidentProfileController;
+use App\Http\Controllers\ResidentNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,7 +20,11 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     // Resident routes
+    Route::get('resident/profile', [ResidentProfileController::class, 'show'])->name('resident.profile');
+    Route::post('resident/profile', [ResidentProfileController::class, 'update'])->name('resident.profile.update');
+    Route::get('resident/notifications', [ResidentNotificationController::class, 'index'])->name('resident.notifications');
     Route::post('document-requests', [DocumentRequestController::class, 'store'])->name('document-requests.store');
+    Route::get('document-requests/{document_request}', [DocumentRequestController::class, 'show'])->name('document-requests.show');
 
     Route::middleware('role:admin|staff|resident')->group(function () {
         Route::resource('document-requests', DocumentRequestController::class);

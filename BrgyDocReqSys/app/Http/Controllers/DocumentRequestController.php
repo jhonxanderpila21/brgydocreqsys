@@ -41,10 +41,15 @@ class DocumentRequestController extends Controller
         'additional_notes' => 'nullable|string|max:1000',
     ]);
 
-    // For resident users, use their user ID directly
+    // For resident users, use their resident ID directly
     if (auth()->user()->isResident()) {
-
-        $validated['resident_id'] = auth()->id();
+        $residentId = auth()->user()->resident?->id;
+        
+        if (!$residentId) {
+            return redirect()->route('resident.profile')
+                ->with('error', 'Please complete your profile before filing a request.');
+        }
+        $validated['resident_id'] = $residentId;
     }
 
     $documentRequest = DocumentRequest::create([
@@ -71,6 +76,20 @@ class DocumentRequestController extends Controller
     return redirect()->route('document-requests.index')
         ->with('success', 'Document request submitted successfully.');
 }
+
+    public function show(DocumentRequest $documentRequest)
+    {
+        // Ensure resident can only view their own requests
+        if (auth()->user()->isResident() && $documentRequest->resident_id !== auth()->user()->resident?->id) {
+            abort(403);
+        }
+
+        $documentRequest->load(['documentType', 'resident', 'statusLogs']);
+        
+        return response()->json([
+            'request' => $documentRequest
+        ]);
+    }
 
     public function edit(DocumentRequest $documentRequest)
     {

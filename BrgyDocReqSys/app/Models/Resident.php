@@ -10,6 +10,7 @@ class Resident extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'household_id',
         'full_name',
         'address',
@@ -27,6 +28,11 @@ class Resident extends Model
     public function household()
     {
         return $this->belongsTo(Household::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function getAgeAttribute()

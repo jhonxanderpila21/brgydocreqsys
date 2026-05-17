@@ -131,14 +131,29 @@ class DashboardController extends Controller
             ));
         } else {
             // Resident dashboard
-            $userRequests = DocumentRequest::where('resident_id', $user->id)
-                ->with(['documentType'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $residentId = $user->resident?->id;
+            
+            $userRequests = $residentId 
+                ? DocumentRequest::where('resident_id', $residentId)
+                    ->with(['documentType'])
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                : collect();
+
+            $notifications = $residentId
+                ? \App\Models\DocumentRequestStatusLog::whereHas('documentRequest', function ($query) use ($residentId) {
+                        $query->where('resident_id', $residentId);
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10)
+                    ->get()
+                : collect();
 
             return view('dashboard.resident', compact(
                 'userRequests',
-                'documentTypes'
+                'documentTypes',
+                'residentId',
+                'notifications'
             ));
         }
     }
