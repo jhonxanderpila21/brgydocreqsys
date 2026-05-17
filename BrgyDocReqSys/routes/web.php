@@ -20,7 +20,7 @@ Route::middleware('auth')->group(function () {
     // Resident routes
     Route::post('document-requests', [DocumentRequestController::class, 'store'])->name('document-requests.store');
 
-    Route::middleware('role:admin|staff')->group(function () {
+    Route::middleware('role:admin|staff|resident')->group(function () {
         Route::resource('document-requests', DocumentRequestController::class);
 
         Route::resource('residents', ResidentController::class)->except(['show']);

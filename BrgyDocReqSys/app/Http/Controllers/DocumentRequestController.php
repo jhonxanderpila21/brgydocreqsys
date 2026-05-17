@@ -32,38 +32,55 @@ class DocumentRequestController extends Controller
         return view('document_requests.create', compact('residents', 'documentTypes'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'resident_id' => 'sometimes|exists:residents,id',
-            'document_type_id' => 'required|exists:document_types,id',
-            'purpose' => 'required|string|max:1000',
-            'additional_notes' => 'nullable|string|max:1000',
-        ]);
+  public function store(Request $request)
+{
+    $validated = $request->validate([
+        'resident_id' => 'nullable|exists:residents,id',
+        'document_type_id' => 'required|exists:document_types,id',
+        'purpose' => 'required|string|max:1000',
+        'additional_notes' => 'nullable|string|max:1000',
+    ]);
 
-        // If resident_id not provided, assume it's the authenticated user (resident)
-        if (!isset($validated['resident_id'])) {
-            $validated['resident_id'] = auth()->id();
-        }
+    // For resident users, use their user ID directly
+    if (auth()->user()->isResident()) {
 
-        $documentRequest = DocumentRequest::create(array_merge($validated, ['status' => DocumentRequest::STATUS_PENDING]));
-
-        $documentRequest->statusLogs()->create([
-            'status' => DocumentRequest::STATUS_PENDING,
-            'remarks' => 'Request submitted',
-        ]);
-
-        if (auth()->user()->isResident()) {
-            return redirect()->route('dashboard.index')->with('success', 'Document request submitted successfully.');
-        }
-
-        return redirect()->route('document-requests.index')->with('success', 'Document request submitted successfully.');
+        $validated['resident_id'] = auth()->id();
     }
+
+    $documentRequest = DocumentRequest::create([
+        'resident_id' => $validated['resident_id'],
+        'document_type_id' => $validated['document_type_id'],
+        'purpose' => $validated['purpose'],
+        'additional_notes' => $validated['additional_notes'] ?? null,
+        'status' => DocumentRequest::STATUS_PENDING,
+    ]);
+
+    $documentRequest->statusLogs()->create([
+        'status' => DocumentRequest::STATUS_PENDING,
+        'remarks' => 'Request submitted',
+    ]);
+
+    // Redirect resident users
+    if (auth()->user()->isResident()) {
+
+        return redirect()->route('dashboard.index')
+            ->with('success', 'Document request submitted successfully.');
+    }
+
+    // Redirect admin/staff
+    return redirect()->route('document-requests.index')
+        ->with('success', 'Document request submitted successfully.');
+}
 
     public function edit(DocumentRequest $documentRequest)
     {
         $statuses = DocumentRequest::statuses();
-        $documentRequest->load(['resident', 'documentType', 'statusLogs']);
+
+        $documentRequest->load([
+            'resident',
+            'documentType',
+            'statusLogs'
+        ]);
 
         return view('document_requests.edit', compact('documentRequest', 'statuses'));
     }
@@ -75,7 +92,9 @@ class DocumentRequestController extends Controller
             'remarks' => 'nullable|string|max:1000',
         ]);
 
-        $documentRequest->update(['status' => $validated['status']]);
+        $documentRequest->update([
+            'status' => $validated['status']
+        ]);
 
         $documentRequest->statusLogs()->create([
             'status' => $validated['status'],
@@ -93,7 +112,8 @@ class DocumentRequestController extends Controller
         ]);
 
         if ($documentRequest->is_paid) {
-            return redirect()->back()->with('error', 'This request has already been paid.');
+            return redirect()->back()
+                ->with('error', 'This request has already been paid.');
         }
 
         $receiptNumber = 'RCP-' . strtoupper(uniqid());
@@ -116,7 +136,10 @@ class DocumentRequestController extends Controller
                 ->with('error', 'Payment not yet recorded for this request.');
         }
 
-        $documentRequest->load(['resident', 'documentType']);
+        $documentRequest->load([
+            'resident',
+            'documentType'
+        ]);
 
         return view('document_requests.receipt', compact('documentRequest'));
     }
