@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<title>Admin Dashboard - {{ config('app.name', 'Barangay Document Request System') }}</title>
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">Admin Dashboard</h1>

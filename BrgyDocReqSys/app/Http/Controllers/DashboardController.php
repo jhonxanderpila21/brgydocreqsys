@@ -95,6 +95,26 @@ class DashboardController extends Controller
                 'documentTypes'
             ));
         } elseif ($user->isStaff()) {
+            // Get households for the search dropdown
+            $households = Household::orderBy('name')->get();
+
+            // Get recent residents (last 5 added)
+            $recentResidents = Resident::with('household')
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+
+            // Get households with residents
+            $householdsWithResidents = Household::has('residents')->get();
+
+            // Get document types with request counts
+            $documentTypes = DocumentType::withCount('requests')
+                ->orderBy('name')
+                ->get();
+
+            // Calculate total fees
+            $totalFees = $documentTypes->sum('processing_fee');
+
             return view('dashboard.staff', compact(
                 'stats',
                 'requestsByStatus',
@@ -103,7 +123,11 @@ class DashboardController extends Controller
                 'monthlyTrend',
                 'revenueByMonth',
                 'ageDemographics',
-                'documentTypes'
+                'documentTypes',
+                'households',
+                'recentResidents',
+                'householdsWithResidents',
+                'totalFees'
             ));
         } else {
             // Resident dashboard

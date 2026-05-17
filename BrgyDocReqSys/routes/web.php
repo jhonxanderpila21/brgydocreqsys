@@ -21,6 +21,8 @@ Route::middleware('auth')->group(function () {
     Route::post('document-requests', [DocumentRequestController::class, 'store'])->name('document-requests.store');
 
     Route::middleware('role:admin|staff')->group(function () {
+        Route::resource('document-requests', DocumentRequestController::class);
+
         Route::resource('residents', ResidentController::class)->except(['show']);
         Route::resource('households', HouseholdController::class)->except(['show']);
         Route::resource('document-requests', DocumentRequestController::class)->except(['show', 'store']);

@@ -18,4 +18,9 @@ class DocumentType extends Model
     protected $casts = [
         'processing_fee' => 'decimal:2',
     ];
+
+    public function requests()
+    {
+        return $this->hasMany(DocumentRequest::class);
+    }
 }

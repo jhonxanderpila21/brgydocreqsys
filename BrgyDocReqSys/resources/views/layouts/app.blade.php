@@ -34,12 +34,10 @@
                 min-height: 100vh;
                 margin-left: 250px;
             }
-            .topbar {
-                background: #ffffff;
-                border-bottom: 1px solid rgba(15, 23, 32, .08);
-                position: sticky;
-                top: 0;
-                z-index: 100;
+            .sidebar-bottom {
+                margin-top: auto;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.12);
             }
             @media (max-width: 991.98px) {
                 .sidebar {
@@ -96,6 +94,59 @@
                 font-size: .95rem;
                 color: #475569;
             }
+
+            /* Enhanced Table Styling */
+            .table {
+                margin-bottom: 0;
+            }
+            .table th,
+            .table td {
+                padding: 1rem 1.25rem;
+                vertical-align: middle;
+                border-bottom: 1px solid #e9ecef;
+            }
+            .table thead th {
+                background-color: #f8f9fa;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.875rem;
+                letter-spacing: 0.05em;
+                border-bottom: 2px solid #dee2e6;
+                padding-top: 1.25rem;
+                padding-bottom: 1.25rem;
+            }
+            .table tbody tr {
+                transition: all 0.2s ease;
+            }
+            .table tbody tr:hover {
+                background-color: #f8f9fa;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            .table-responsive {
+                border-radius: 0.5rem;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            /* Enhanced Card Styling */
+            .card {
+                transition: all 0.3s ease;
+                border: 1px solid #e9ecef;
+            }
+            .card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                border-color: #dee2e6;
+            }
+            .card-body {
+                padding: 1.5rem;
+            }
+            .card-header {
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #e9ecef;
+                padding: 1.25rem 1.5rem;
+            }
         </style>
     </head>
     <body>
@@ -103,13 +154,24 @@
             <aside class="sidebar p-4 d-none d-md-flex flex-column gap-4">
                 <div>
                     <div class="d-flex align-items-center mb-3">
-                       
                         <div>
                             <div class="brand-title fw-bold">Barangay Document Request System</div>
-                           
+                            <div class="text-white-50 small">
+                                @auth
+                                    {{ auth()->user()->name }}
+                                @else
+                                    Administrator
+                                @endauth
+                            </div>
                         </div>
                     </div>
-                    <div class="small text-secondary mb-4">Hello, Administrator</div>
+                    <div class="small text-secondary mb-4">
+                        @auth
+                            Logged in as {{ auth()->user()->name }}
+                        @else
+                            Hello, Administrator
+                        @endauth
+                    </div>
                 </div>
 
                 <nav class="nav flex-column gap-1">
@@ -146,26 +208,21 @@
                         </a>
                     @endif
                 </nav>
+
+                <div class="sidebar-bottom">
+                    @auth
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Logout
+                            </button>
+                        </form>
+                    @endauth
+                </div>
             </aside>
 
             <main class="main-content flex-fill">
-                <header class="topbar py-3 px-4 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h1 class="h4 mb-0">{{ isset($pageTitle) ? $pageTitle : 'Dashboard' }}</h1>
-                        <p class="text-muted mb-0">Manage barangay requests, residents, and dashboard.</p>
-                    </div>
-                    <div class="text-end d-flex flex-column gap-2">
-                        <div class="fw-semibold">{{ auth()->check() ? auth()->user()->name : 'Administrator' }}</div>
-                        <div class="user-label">{{ auth()->check() ? 'Logged in' : 'Guest' }}</div>
-                        @auth
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">Logout</button>
-                            </form>
-                        @endauth
-                    </div>
-                </header>
-
                 <div class="container-fluid py-4 px-4">
                     @if(session('success'))
                         <div class="alert alert-success" role="alert">
